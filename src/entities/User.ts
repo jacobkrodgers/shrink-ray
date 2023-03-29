@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Relation } from 'typeorm';
+import { Link } from './Link';
 
 @Entity()
 export class User {
@@ -17,4 +18,6 @@ export class User {
     @Column({ default: false })
     isAdmin: boolean;
 
+    @OneToMany(() => Link, (link) => link.linkId)
+    book: Relation<Link>[];
 }
