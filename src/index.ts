@@ -3,7 +3,6 @@ import 'express-async-errors';
 import express, { Express } from 'express';
 import session from 'express-session';
 import connectSqlite3 from 'connect-sqlite3';
-import { notImplemented } from './controllers/NotImplementedController';
 import { logIn, registerUser } from './controllers/UserController';
 import { deleteLink, getOriginalUrl, getUserLinks, shortenUrl } from './controllers/LinkController';
 
