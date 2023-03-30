@@ -19,5 +19,5 @@ export class User {
     isAdmin: boolean;
 
     @OneToMany(() => Link, (link) => link.linkId)
-    book: Relation<Link>[];
+    links: Relation<Link>[];
 }
