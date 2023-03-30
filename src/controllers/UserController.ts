@@ -23,4 +23,35 @@ async function registerUser(req: Request, res: Response): Promise<void> {
     }
 }
 
-export { registerUser }
+async function logIn(req: Request, res: Response): Promise<void> {
+    const { username, password } = req.body as AuthRequest;
+
+    const user = await getUserByUsername(username);
+
+    if (!user) {
+        res.sendStatus(404);
+        return;
+    }
+
+    const { passwordHash } = user;
+
+    if (!(await argon2.verify(passwordHash, password))) {
+        res.sendStatus(403);
+        return;
+    }
+
+    await req.session.clearSession();
+
+    req.session.authenticatedUser = {
+        userId: user.userId,
+        username: user.username,
+        isPro: user.isPro,
+        isAdmin: user.isAdmin,
+    }
+    req.session.isLoggedIn = true;
+
+    res.sendStatus(200);
+
+}
+
+export { registerUser, logIn }

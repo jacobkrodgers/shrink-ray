@@ -4,7 +4,7 @@ import express, { Express } from 'express';
 import session from 'express-session';
 import connectSqlite3 from 'connect-sqlite3';
 import { notImplemented } from './controllers/NotImplementedController';
-import { registerUser } from './controllers/UserController';
+import { logIn, registerUser } from './controllers/UserController';
 
 const app: Express = express();
 const { PORT, COOKIE_SECRET } = process.env;
@@ -29,7 +29,7 @@ app.post('/api/links', notImplemented);
 app.delete('/api/users/:targetUserId/links/:targetLinkId', notImplemented);
 app.get('/:targetLinkId', notImplemented)
 app.post('/api/users', registerUser);
-app.post('/api/login', notImplemented);
+app.post('/api/login', logIn);
 
 app.listen(PORT, () => {
     console.log(`Listening at http://localhost:${PORT}`);
