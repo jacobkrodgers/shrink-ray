@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createLinkId, createNewLink, getLinkById, getLinksByUserId, getLinksByUserIdForOwnAccount, updateLinkVisits } from '../models/LinkModel'
+import { createLinkId, createNewLink, deleteLinkById, getLinkById, getLinksByUserId, getLinksByUserIdForOwnAccount, updateLinkVisits } from '../models/LinkModel'
 import { getUserById } from '../models/UserModel';
 import { parseDatabaseError } from '../utils/db-utils';
 
@@ -44,25 +44,53 @@ async function getOriginalUrl(req: Request, res: Response): Promise<void> {
         return;
     }
 
-    await updateLinkVisits(link);
-
-    res.redirect(301, link.originalURL);
+    try{
+      await updateLinkVisits(link);
+      res.redirect(301, link.originalURL);
+    } catch (err) {
+      console.error(err);
+      const databaseErrorMessage = parseDatabaseError(err);
+      res.status(500).json(databaseErrorMessage);
+  }
 }
 
 async function getUserLinks(req: Request, res: Response): Promise<void> {
-  const { userId } = req.session.authenticatedUser;
-  const {targetUserId} = req.params;
+    const { userId } = req.session.authenticatedUser;
+    const {targetUserId} = req.params;
 
-  if (!(userId === targetUserId)){
-    const links = await getLinksByUserId(userId);
-    res.json(links);
-    return;
-  }
+    if (!(userId === targetUserId)){
+      const links = await getLinksByUserId(userId);
+      res.json(links);
+      return;
+    }
 
-  const links = await getLinksByUserIdForOwnAccount(userId);
-  res.json(links);
-  return;
+    try {
+      const links = await getLinksByUserIdForOwnAccount(userId);
+      res.json(links);
+    } catch (err) {
+      console.error(err);
+      const databaseErrorMessage = parseDatabaseError(err);
+      res.status(500).json(databaseErrorMessage);
+    }
 
 }
 
-export { shortenUrl, getOriginalUrl, getUserLinks };
+async function deleteLink(req: Request, res: Response): Promise<void> {
+    const {userId, isAdmin} = req.session.authenticatedUser;
+    const {targetUserId, targetLinkId} = req.params;
+
+    if (!(userId === targetUserId || isAdmin)){
+      res.sendStatus(401);
+      return;
+  }
+
+    try {
+      await deleteLinkById(targetLinkId);
+      res.sendStatus(201);
+  } catch (err) {
+      console.error(err);
+      const databaseErrorMessage = parseDatabaseError(err);
+      res.status(500).json(databaseErrorMessage);
+  }
+}
+export { shortenUrl, getOriginalUrl, getUserLinks, deleteLink };
