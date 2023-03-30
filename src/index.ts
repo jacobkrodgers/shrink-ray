@@ -5,7 +5,7 @@ import session from 'express-session';
 import connectSqlite3 from 'connect-sqlite3';
 import { notImplemented } from './controllers/NotImplementedController';
 import { logIn, registerUser } from './controllers/UserController';
-import { getOriginalUrl, shortenUrl } from './controllers/LinkController';
+import { getOriginalUrl, getUserLinks, shortenUrl } from './controllers/LinkController';
 
 const app: Express = express();
 const { PORT, COOKIE_SECRET } = process.env;
@@ -15,7 +15,7 @@ app.use(
     session({
         store: new SQLiteStore({ db: 'sessions.sqlite', }),
         secret: COOKIE_SECRET,
-        cookie: { maxAge: 8 * 60 * 60 * 1000 }, // 8 hours 
+        cookie: { maxAge: 8 * 60 * 60 * 1000 }, // 8 hours
         name: 'session',
         resave: false,
         saveUninitialized: false,
@@ -25,7 +25,7 @@ app.use(
 app.use(express.json());
 
 
-app.get('/api/users/:targetUserId/links', notImplemented);
+app.get('/api/users/:targetUserId/links', getUserLinks);
 app.post('/api/links', shortenUrl);
 app.delete('/api/users/:targetUserId/links/:targetLinkId', notImplemented);
 app.get('/:targetLinkId', getOriginalUrl)

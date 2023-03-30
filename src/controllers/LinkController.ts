@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createLinkId, createNewLink, getLinkById, updateLinkVisits } from '../models/LinkModel'
+import { createLinkId, createNewLink, getLinkById, getLinksByUserId, getLinksByUserIdForOwnAccount, updateLinkVisits } from '../models/LinkModel'
 import { getUserById } from '../models/UserModel';
 import { parseDatabaseError } from '../utils/db-utils';
 
@@ -49,4 +49,20 @@ async function getOriginalUrl(req: Request, res: Response): Promise<void> {
     res.redirect(301, link.originalURL);
 }
 
-export { shortenUrl, getOriginalUrl };
+async function getUserLinks(req: Request, res: Response): Promise<void> {
+  const { userId } = req.session.authenticatedUser;
+  const {targetUserId} = req.params;
+
+  if (!(userId === targetUserId)){
+    const links = await getLinksByUserId(userId);
+    res.json(links);
+    return;
+  }
+
+  const links = await getLinksByUserIdForOwnAccount(userId);
+  res.json(links);
+  return;
+
+}
+
+export { shortenUrl, getOriginalUrl, getUserLinks };
