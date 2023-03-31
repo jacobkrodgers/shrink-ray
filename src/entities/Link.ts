@@ -15,7 +15,7 @@ export class Link {
     @Column()
     lastAccessedOn: string;
 
-    @ManyToOne(() => User, (user) => user.userId)
+    @ManyToOne(() => User, (user) => user.links)
     @JoinColumn()
     user: Relation<User>;
 }

@@ -6,7 +6,7 @@ import { parseDatabaseError } from '../utils/db-utils';
 async function registerUser(req: Request, res: Response): Promise<void> {
     const { username, password } = req.body as AuthRequest;
 
-    if (getUserByUsername(username)) {
+    if (await getUserByUsername(username)) {
         res.sendStatus(403);
         return;
     }
@@ -39,20 +39,20 @@ async function logIn(req: Request, res: Response): Promise<void> {
         return;
     }
 
-    try{
-      await req.session.clearSession();
-      req.session.authenticatedUser = {
-          userId: user.userId,
-          username: user.username,
-          isPro: user.isPro,
-          isAdmin: user.isAdmin,
-      }
-      req.session.isLoggedIn = true;
-      res.sendStatus(200);
-    } catch(err){
-      console.error(err);
-      const databaseErrorMessage = parseDatabaseError(err);
-      res.status(500).json(databaseErrorMessage);
+    try {
+        await req.session.clearSession();
+        req.session.authenticatedUser = {
+            userId: user.userId,
+            username: user.username,
+            isPro: user.isPro,
+            isAdmin: user.isAdmin,
+        }
+        req.session.isLoggedIn = true;
+        res.sendStatus(200);
+    } catch (err) {
+        console.error(err);
+        const databaseErrorMessage = parseDatabaseError(err);
+        res.status(500).json(databaseErrorMessage);
     }
 
 }

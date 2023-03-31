@@ -6,49 +6,51 @@ import { User } from '../entities/User';
 const linkRepository = AppDataSource.getRepository(Link);
 
 async function getLinkById(linkId: string): Promise<Link | null> {
-    const link = await linkRepository
-        .createQueryBuilder('link')
-        .leftJoinAndSelect('link.user', 'user')
-        .where('link.linkId = :linkId', { linkId })
-        .getOne();
+  const link = await linkRepository
+    .createQueryBuilder('link')
+    .leftJoinAndSelect('link.user', 'user')
+    .where('link.linkId = :linkId', { linkId })
+    .getOne();
 
-    return link;
+  return link;
 }
 
 function createLinkId(originalUrl: string, userId: string): string {
-    const md5 = createHash('md5');
-    md5.update(originalUrl + userId);
-    const urlHash = md5.digest('base64url');
-    const linkId = urlHash.slice(0, 9);
+  const md5 = createHash('md5');
+  md5.update(originalUrl + userId);
+  const urlHash = md5.digest('base64url');
+  const linkId = urlHash.slice(0, 9);
 
-    return linkId;
+  return linkId;
 }
 
 async function createNewLink(originalUrl: string, linkId: string, creator: User): Promise<Link> {
-    let newLink = new Link();
-    newLink.linkId = linkId;
-    newLink.originalURL = originalUrl;
-    newLink.user = creator;
+  let newLink = new Link();
+  newLink.linkId = linkId;
+  newLink.numHits = 0;
+  newLink.originalURL = originalUrl;
+  newLink.user = creator;
+  newLink.lastAccessedOn = Date()
 
-    newLink = await linkRepository.save(newLink);
+  newLink = await linkRepository.save(newLink);
 
-    return newLink;
+  return newLink;
 }
 
 async function updateLinkVisits(link: Link): Promise<Link> {
-    const updatedLink = link;
+  const updatedLink = link;
 
-    updatedLink.numHits += 1;
-    updatedLink.lastAccessedOn = Date();
+  updatedLink.numHits += 1;
+  updatedLink.lastAccessedOn = Date();
 
-    await linkRepository
-        .createQueryBuilder()
-        .update(link)
-        .set({ numHits: updatedLink.numHits, lastAccessedOn: updatedLink.lastAccessedOn })
-        .where({ linkId: updatedLink.linkId })
-        .execute();
+  await linkRepository
+    .createQueryBuilder()
+    .update(link)
+    .set({ numHits: updatedLink.numHits, lastAccessedOn: updatedLink.lastAccessedOn })
+    .where({ linkId: updatedLink.linkId })
+    .execute();
 
-    return updatedLink;
+  return updatedLink;
 }
 
 async function getLinksByUserId(userId: string): Promise<Link[]> {
@@ -56,7 +58,7 @@ async function getLinksByUserId(userId: string): Promise<Link[]> {
     .createQueryBuilder('link')
     .where({ user: { userId } }) // NOTES: This is how you do nested WHERE clauses
     .leftJoin('link.user', 'user')
-    .select(['link.id', 'link.originalURL', 'link.user.userId', 'link.user.username', 'link.user.isAdmin'])
+    .select(['link.linkId', 'link.originalURL', 'user.userId', 'user.username', 'user.isAdmin'])
     .getMany();
 
   return links;
@@ -67,7 +69,7 @@ async function getLinksByUserIdForOwnAccount(userId: string): Promise<Link[]> {
     .createQueryBuilder('link')
     .where({ user: { userId } }) // NOTES: This is how you do nested WHERE clauses
     .leftJoin('link.user', 'user')
-    .select(['link.id', 'link.originalURL', 'link.numHits', 'link.lastAccessedOn', 'link.originalURL', 'link.user.userId', 'link.user.username', 'link.user.isPro', 'link.user.isAdmin'])
+    .select(['link.linkId', 'link.originalURL', 'link.numHits', 'link.lastAccessedOn', 'link.originalURL', 'user.userId', 'user.username', 'user.isPro', 'user.isAdmin'])
     .getMany();
 
   return links;

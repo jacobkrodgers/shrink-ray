@@ -18,6 +18,6 @@ export class User {
     @Column({ default: false })
     isAdmin: boolean;
 
-    @OneToMany(() => Link, (link) => link.linkId)
+    @OneToMany(() => Link, (link) => link.user)
     links: Relation<Link>[];
 }
