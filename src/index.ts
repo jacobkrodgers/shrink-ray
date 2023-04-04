@@ -20,7 +20,7 @@ app.use(
         saveUninitialized: false,
     })
 );
-app.use(express.static('public', { extensions: ['.html'] }));
+app.use(express.static('public', { extensions: ['html'] }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
